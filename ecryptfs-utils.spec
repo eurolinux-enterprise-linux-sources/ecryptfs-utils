@@ -5,7 +5,7 @@
 
 Name: ecryptfs-utils
 Version: 82
-Release: 6%{?dist}
+Release: 6%{?dist}.3
 Summary: The eCryptfs mount helper and support libraries
 Group: System Environment/Base
 License: GPLv2+
@@ -25,6 +25,12 @@ Patch3: ecryptfs-utils-83-fixsalt.patch
 
 # fedora/rhel specific, rhbz#558932, remove nss dependency from umount.ecryptfs
 Patch4: ecryptfs-utils-83-splitnss.patch
+
+# CVE-2011-1831, CVE-2011-1832, CVE-2011-1833, CVE-2011-1834, CVE-2011-1835, CVE-2011-1837
+# for ecryptfs-utils < 90, rhbz#729465
+Patch5: ecryptfs-utils-82-multicve.patch
+
+Patch6: ecryptfs-utils-82-CVE-2011-3145.patch
 
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 Requires: keyutils, cryptsetup-luks, util-linux-ng
@@ -66,6 +72,8 @@ the interface supplied by the ecryptfs-utils library.
 %patch2 -p1 -b .nocryptdisks
 %patch3 -p1 -b .fixsalt
 %patch4 -p1 -b .splitnss
+%patch5 -p1 -b .multicve
+%patch6 -p1 -b .cve20113145
 
 %build
 export CFLAGS="$RPM_OPT_FLAGS -ggdb -O2 -Werror"
@@ -187,6 +195,20 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitearch}/ecryptfs-utils/_libecryptfs.so
 
 %changelog
+* Tue Aug 23 2011 Michal Hlavinka <mhlavink@redhat.com> - 82-6.3
+- do not forget to set the group id in mount.ecryptfs_private
+
+* Mon Aug 22 2011 Michal Hlavinka <mhlavink@redhat.com> - 82-6.2
+- fix regression in ecryptfs-setup-private
+
+* Thu Aug 11 2011 Michal Hlavinka <mhlavink@redhat.com> - 82-6.1
+- security fixes:
+- privilege escalation via mountpoint race conditions (CVE-2011-1831, CVE-2011-1832)
+- race condition when checking source during mount (CVE-2011-1833)
+- mtab corruption via improper handling (CVE-2011-1834)
+- key poisoning via insecure temp directory handling (CVE-2011-1835)
+- arbitrary file overwrite via lock counter race (CVE-2011-1837)
+
 * Tue May 04 2010 Michal Hlavinka <mhlavink@redhat.com> - 82-6
 - remove nss dependency from umount.ecryptfs
 
